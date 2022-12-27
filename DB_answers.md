@@ -480,7 +480,125 @@ $v_i$,
 
 ## 21. <a name="21st"></a> Язык запросов SQL. Внешнее и внутреннее соединение в запросах выборки. Вложенные запросы и подзапросы.
 
-### TODO
+Декартово произведение $R * S$:
+
+```SQL
+SELECT * FROM R,S
+```
+Естественное соединение
+$R(A,B,C)$ 
+$S(B,C,D)$:
+
+```SQL
+SELECT DISTINCT R.*, S.D FROM R, S
+WHERE R.B = S.B AND R.C = S.C
+```
+
+$\theta$ - соединение:
+
+```SQL
+SELECT R.*, S.* FROM R, S
+WHERE R.B < S.D
+```
+
+* Эквисоединение (внутреннее соединение) – `INNER JOIN`
+* Внешнее соединение 
+    * Полное внешнее соединение - `FULL [OUTER] JOIN`
+    * Внешнее соединение слева - `LEFT [OUTER] JOIN`
+    * Внешнее соединение справа - `RIGHT [OUTER] JOIN`
+<!---->
+
+    Внутреннее соединение – включает строки соединяемых таблиц, удовлетворяющие условию соединения
+
+```SQL
+WHERE table1.t1_id=table2.t1_id
+FROM table1 INNER JOIN table2 ON table1.t1_id=table2.t1_id 
+(или просто JOIN ... ON)
+```
+* Полное внешнее соединение – включает все строки из двух таблиц, в том числе не имеющие совпадений в «присоединяемой» таблице
+
+```SQL
+FROM table1 FULL OUTER JOIN table2 ON
+table1.t1_id=table2.t1_id (или FULL JOIN...ON)
+```
+
+* Внешнее соединение слева – включает все строки из таблицы слева и только те строки из таблицы справа, которые удовлетворяют условию соединения
+
+```SQL
+FROM table1 LEFT OUTER JOIN table2 ON
+table1.t1_id=table2.t1_id (или LEFT JOIN...ON)
+```
+
+* Внешнее соединение справа - включает все строки из таблицы справа и только те строки из таблицы слева, которые удовлетворяют условию соединения
+
+```SQL
+FROM table1 RIGHT OUTER JOIN table2 ON
+table1.t1_id=table2.t1_id (или RIGHT JOIN...ON)
+```
+
+### Вложенные подзапросы
+
+```SQL    
+Вложенные запросы представляют собой выражение SELECT, которые подставляются в выражение FROM другого оператора SELECT.
+```
+
+```SQL
+SELECT * FROM table1 T1
+INNER JOIN
+(SELECT * FROM table2 T2
+WHERE T2.attr=‘value’) AS T3 
+ON T1.t1_id=T3.t1_id
+```
+
+#### Операторы `ANY` и `SOME`
+
+    Возвращают истину, если хотя бы для одной строки условие истинно
+
+Пример:
+
+```SQL
+SELECT R.a, R.b FROM R
+WHERE R.c > ANY (
+    SELECT S.size FROM S
+    WHERE S.s_name LIKE ‘test%’)
+```
+```SQL
+SELECT R.a, R.b FROM R
+WHERE R.c > SOME (
+    SELECT S.size FROM S
+    WHERE S.s_name LIKE ‘test%’)
+```
+
+#### Оператор `EXISTS`
+
+    Возвращает истину если выражение существует
+
+Пример:
+
+```SQL
+SELECT T1.title_id, T1.title
+FROM titles T1
+WHERE NOT EXISTS (
+    SELECT *
+    FROM titles T2 
+    INNER JOIN sales S 
+    ON T2.title_id=S.title_id
+    WHERE T2.title_id=T1.title_id)
+```
+
+Пример с оператором `IN`:
+
+```SQL
+SELECT T.title_id, T.title
+FROM titles T 
+INNER JOIN titleauthor TA 
+ON T.title_id=TA.title_id
+WHERE TA.au_id IN (
+    SELECT A.au_id FROM authors A 
+    WHERE A.au_fname LIKE ‘a%’)
+```
+
+    !Связанный подзапрос выполняется для каждого ряда, удовлетворяющего другим условиям основного запроса.
 
 ---
 
