@@ -486,7 +486,89 @@ $v_i$,
 
 ## 22. <a name="22nd"></a> Язык запросов SQL. Агрегирующие функции. Группирующие SELECT-запросы. Формирование сводных отчетов.
 
-### TODO
+### Агрегирующие функции:
+* COUNT(exp) – число значений выражения, не равных NULL
+* COUNT(*) – число строк (рядов)
+* MAX(exp), MIN(exp) – максимальное и минимальное значение выражения
+* SUM(exp) – сумма всех значений выражения
+* AVG(exp) – среднее значение выражения
+
+```SQL
+SELECT COUNT(DISTINCT user_id)
+FROM users
+WHERE users.name = "sherlock"
+```
+```SQL
+SELECT MAX(password)
+FROM users
+WHERE users.id > 1
+```
+### Групирующие запросы:
+Запросы включающие 
+```SQL 
+SELECT <список выборки> ...
+GROUP BY <колонки группировки>
+```
+являются групирующими
+
+    Каждый элемент в списке выборки должен иметь единственное значение для любой группы.
+
+Ограничения на выполнение группирования:
+* Конструкция ``WHERE`` выполняется до проведения группировки.
+* Дополнительные ограничения на группы могут быть заданы в конструкции ``HAVING``.
+На практике ``HAVING`` используется при необходимости отбора данных по значению агрегатных функций, рассчитанных для групп.
+
+### Сводные отчеты
+
+#### ROLLUP
+
+```SQL
+GROUP BY ROLLUP(список выражений)
+```
+
+Позволяет указать, что кроме итоговых значений для каждого варианта в списке выражений необходимо рассчитать «обобщенные итоги» по каждому элементу списка выражений. Раскрывает итоги только в порядке следования выражений в списке.
+
+Пример:
+
+```SQL
+SELECT dormitory_room_number, COUNT(student_id) AS total
+FROM dormitory
+GROUP BY
+ROLLUP(dormitory_room_number)
+```
+
+#### CUBE
+
+```SQL
+GROUP BY CUBE(список выражений)
+```
+
+Позволяет указать, что кроме итоговых значений для каждого варианта в списке выражений необходимо рассчитать «обобщенные итоги» по каждому элементу списка выражений. Раскрывает все возможные комбинации итогов.
+
+Пример:
+
+```SQL
+SELECT cap_year_start, cap_year_end, COUNT(student_id) AS total
+FROM cap_year_journal c
+JOIN student ON c.cap_year_record_id = student.cap_year_record_id
+GROUP BY
+CUBE (cap_year_start, cap_year_end)
+```    
+
+#### GROUPING SETS
+
+Позволяет рассчитать итоги для каждого уникального значения каждого столбца из списка выражений.
+Если в списке оператора GROUPING SETS несколько столбцов заключено во внутренние скобки, они считаются единым выражением.
+
+Пример:
+
+```SQL
+SELECT contract_type, contract_date, COUNT(student_id) AS total
+FROM educational_contracts e
+JOIN contract_type c on e.contract_type_id = c.contract_type_id
+GROUP BY
+GROUPING SETS (contract_type, contract_date) 
+```
 
 ---
 
